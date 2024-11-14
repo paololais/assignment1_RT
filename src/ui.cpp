@@ -6,23 +6,18 @@
 #include <thread>
 #include <chrono>
 
-// Function to spawn a new turtle
-void spawnTurtle(ros::NodeHandle& nh) {
-	ros::ServiceClient spawn_client =  nh.serviceClient<turtlesim::Spawn>("/spawn");
+int main(int argc, char** argv) {
+    ros::init(argc, argv, "ui_node");
+    ros::NodeHandle nh;
+
+    // Spawn turtle2
+    ros::ServiceClient spawn_client =  nh.serviceClient<turtlesim::Spawn>("/spawn");
     turtlesim::Spawn srv;
     if (spawn_client.call(srv)) {
         ROS_INFO("Spawned turtle2 successfully.");
     } else {
         ROS_WARN("Failed to spawn turtle2.");
     }
-}
-
-int main(int argc, char** argv) {
-    ros::init(argc, argv, "ui_node");
-    ros::NodeHandle nh;
-
-    // Spawn turtle2
-    spawnTurtle(nh);
 
     // Publishers for controlling turtles
     ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 10);
@@ -44,8 +39,8 @@ int main(int argc, char** argv) {
         if (std::cin.fail()) {  // Check if the input failed
             std::cin.clear();   // Clear the error flag
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard invalid input
-            std::cout << "Invalid input. Please enter a numeric value for linear velocity." << std::endl;
-            break;
+            ROS_WARN("Invalid input. Please enter a numeric value for linear velocity.");
+            continue;
         }
         
         std::cout << "Enter angular velocity: ";
@@ -53,8 +48,8 @@ int main(int argc, char** argv) {
         if (std::cin.fail()) {  // Check if the input failed
             std::cin.clear();   // Clear the error flag
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard invalid input
-            std::cout << "Invalid input. Please enter a numeric value for angular velocity." << std::endl;
-            break;
+            ROS_WARN("Invalid input. Please enter a numeric value for angular velocity.");
+            continue;
         }
 
         // Create the velocity command
