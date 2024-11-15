@@ -13,6 +13,12 @@ int main(int argc, char** argv) {
     // Spawn turtle2
     ros::ServiceClient spawn_client =  nh.serviceClient<turtlesim::Spawn>("/spawn");
     turtlesim::Spawn srv;
+	srv.request.x = 1.0;
+	srv.request.y = 5.0;
+ 	srv.request.theta = 0.0;
+ 	srv.request.name = "turtle2";
+ 	spawn_client.waitForExistence();
+	spawn_client.call(srv);
     if (spawn_client.call(srv)) {
         ROS_INFO("Spawned turtle2 successfully.");
     } else {
@@ -20,8 +26,8 @@ int main(int argc, char** argv) {
     }
 
     // Publishers for controlling turtles
-    ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 10);
-    ros::Publisher pub_turtle2 = nh.advertise<geometry_msgs::Twist>("turtle2/cmd_vel", 10);
+    ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
+    ros::Publisher pub_turtle2 = nh.advertise<geometry_msgs::Twist>("turtle2/cmd_vel", 1);
 
     while (ros::ok()) {
         int turtle_choice;
