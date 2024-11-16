@@ -3,8 +3,7 @@
 #include "turtlesim/Spawn.h"
 #include <string>
 #include <iostream>
-#include <thread>
-#include <chrono>
+#include "std_msgs/Int32.h"
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ui_node");
@@ -23,6 +22,10 @@ int main(int argc, char** argv) {
     // Publishers for controlling turtles
     ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
     ros::Publisher pub_turtle2 = nh.advertise<geometry_msgs::Twist>("turtle2/cmd_vel", 1);
+
+    ros::Publisher pub_moving_turtle = nh.advertise<std_msgs::Int32>("moving_turtle_id", 10);
+
+    std_msgs::Int32 moving_turtle_msg;
 
     while (ros::ok()) {
         int turtle_choice;
@@ -61,11 +64,14 @@ int main(int argc, char** argv) {
         // Publish the command to the selected turtle
         if (turtle_choice == 1) {
             pub_turtle1.publish(velocity_command);
+            moving_turtle_msg.data = 1;
             ROS_INFO("Sent velocity to turtle1: linear=%f, angular=%f", linear_velocity, angular_velocity);
         } else if (turtle_choice == 2) {
             pub_turtle2.publish(velocity_command);
+            moving_turtle_msg.data = 2;
             ROS_INFO("Sent velocity to turtle2: linear=%f, angular=%f", linear_velocity, angular_velocity);
         }
+        pub_moving_turtle.publish(moving_turtle_msg);
 
         // Let the turtle move for 1 second
         ros::Duration(1.0).sleep();
@@ -78,9 +84,11 @@ int main(int argc, char** argv) {
         } else if (turtle_choice == 2) {
             pub_turtle2.publish(velocity_command);
         }
+        moving_turtle_msg.data = 0;
+        pub_moving_turtle.publish(moving_turtle_msg);
 
         // Give the user another chance to input commands
-        ROS_INFO("Robot stopped. Ready for the next command.");
+        ROS_INFO("Turtle stopped. Ready for the next command.");
     }
 
     return 0;

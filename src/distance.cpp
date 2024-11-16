@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Int32.h"
 #include "turtlesim/Pose.h"
 #include "geometry_msgs/Twist.h"
 #include <cmath>
@@ -12,6 +13,8 @@ const float DISTANCE_THRESHOLD = 0.5;
 const float BOUNDARY_MIN = 1.0;
 const float BOUNDARY_MAX = 10.0;
 
+int moving_turtle = 0; // 0: No turtle is moving, 1: turtle1 is moving, 2: turtle2 is moving.
+
 // Callback for turtle1's pose
 void turtle1Callback(const turtlesim::Pose::ConstPtr &msg)
 {
@@ -22,6 +25,10 @@ void turtle1Callback(const turtlesim::Pose::ConstPtr &msg)
 void turtle2Callback(const turtlesim::Pose::ConstPtr &msg)
 {
     turtle2_pose = *msg;
+}
+void movingTurtleCallback(const std_msgs::Int32::ConstPtr &msg)
+{
+    moving_turtle = msg->data; // Update the ID of the moving turtle
 }
 
 int main(int argc, char **argv)
@@ -40,7 +47,9 @@ int main(int argc, char **argv)
     ros::Publisher pub_turtle1_stop = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
     ros::Publisher pub_turtle2_stop = nh.advertise<geometry_msgs::Twist>("turtle2/cmd_vel", 1);
 
-    ros::Rate rate(1);
+    ros::Subscriber sub_moving_turtle = nh.subscribe("moving_turtle_id", 10, movingTurtleCallback);
+
+    ros::Rate rate(10);
 
     while (ros::ok())
     {
@@ -66,16 +75,21 @@ int main(int argc, char **argv)
         // Check if the turtles are "too close"
         if (distance < DISTANCE_THRESHOLD || out_of_bounds1 || out_of_bounds2)
         {
-            ROS_WARN("Turtles are too close or out of bounds!");
 
-            // Stop turtle1
             geometry_msgs::Twist stop_cmd;
             stop_cmd.linear.x = 0.0;
             stop_cmd.angular.z = 0.0;
-            pub_turtle1_stop.publish(stop_cmd);
-
-            // Stop turtle2
-            pub_turtle2_stop.publish(stop_cmd);
+            // Stop only the moving turtle
+            if (moving_turtle == 1)
+            {
+                pub_turtle1_stop.publish(stop_cmd);
+                ROS_WARN("Turtles are too close or out of bounds! Stopped turtle1.");
+            }
+            else if (moving_turtle == 2)
+            {
+                pub_turtle2_stop.publish(stop_cmd);
+                ROS_WARN("Turtles are too close or out of bounds! Stopped turtle2.");
+            }
         }
 
         rate.sleep();
