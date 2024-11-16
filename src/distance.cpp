@@ -7,8 +7,6 @@
 // Global variables to store turtle poses
 turtlesim::Pose turtle1_pose;
 turtlesim::Pose turtle2_pose;
-// bool turtle1_ready = false;
-// bool turtle2_ready = false;
 
 const float DISTANCE_THRESHOLD = 0.5;
 const float BOUNDARY_MIN = 1.0;
@@ -18,14 +16,12 @@ const float BOUNDARY_MAX = 10.0;
 void turtle1Callback(const turtlesim::Pose::ConstPtr &msg)
 {
     turtle1_pose = *msg;
-    // turtle1_ready = true;
 }
 
 // Callback for turtle2's pose
 void turtle2Callback(const turtlesim::Pose::ConstPtr &msg)
 {
     turtle2_pose = *msg;
-    // turtle2_ready = true;
 }
 
 int main(int argc, char **argv)
