@@ -17,26 +17,26 @@ The package "assignment1_rt" consists in 2 nodes that implement the following:
 
 ## How to run it:
 1) Build the package and generate executables, by running in your ROS wokspace:
-'''bash
+```bash
 catkin_make
-'''
+```
 
 2) Start the ROS Master
 '''bash
 roscore
-'''
+```
 
 3) Launch the Turtlesim Node
-'''bash
+```bash
 rosrun turtlesim turtlesim_node
-'''
+```
 
 4) Launch the ui_node
-'''bash
+```bash
 rosrun assignment1_rt ui_node 
-'''
+```
 
 5) Launch the distance_node
-'''bash
+```bash
 rosrun assignment1_rt distance_node
-'''
+```
