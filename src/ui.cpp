@@ -19,11 +19,6 @@ int main(int argc, char** argv) {
  	srv.request.name = "turtle2";
  	spawn_client.waitForExistence();
 	spawn_client.call(srv);
-    if (spawn_client.call(srv)) {
-        ROS_INFO("Spawned turtle2 successfully.");
-    } else {
-        ROS_WARN("Failed to spawn turtle2.");
-    }
 
     // Publishers for controlling turtles
     ros::Publisher pub_turtle1 = nh.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
