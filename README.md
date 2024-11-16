@@ -22,7 +22,7 @@ catkin_make
 ```
 
 2) Start the ROS Master
-'''bash
+```
 roscore
 ```
 
