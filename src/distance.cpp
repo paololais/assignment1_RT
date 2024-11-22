@@ -8,6 +8,8 @@
 // Global variables to store turtle poses
 turtlesim::Pose turtle1_pose;
 turtlesim::Pose turtle2_pose;
+geometry_msgs::Twist turtle1_velocity;
+geometry_msgs::Twist turtle2_velocity;
 
 const float DISTANCE_THRESHOLD = 0.5;
 const float BOUNDARY_MIN = 1.0;
@@ -25,6 +27,16 @@ void turtle1Callback(const turtlesim::Pose::ConstPtr &msg)
 void turtle2Callback(const turtlesim::Pose::ConstPtr &msg)
 {
     turtle2_pose = *msg;
+}
+
+void turtle1VelocityCallback(const geometry_msgs::Twist::ConstPtr &msg)
+{
+    turtle1_velocity = *msg;
+}
+
+void turtle2VelocityCallback(const geometry_msgs::Twist::ConstPtr &msg)
+{
+    turtle2_velocity = *msg;
 }
 void movingTurtleCallback(const std_msgs::Int32::ConstPtr &msg)
 {
@@ -49,6 +61,10 @@ int main(int argc, char **argv)
 
     ros::Subscriber sub_moving_turtle = nh.subscribe("moving_turtle_id", 10, movingTurtleCallback);
 
+    // Subscribers to turtle1 and turtle2 velocities
+    ros::Subscriber sub_turtle1_vel = nh.subscribe("turtle1/cmd_vel", 10, turtle1VelocityCallback);
+    ros::Subscriber sub_turtle2_vel = nh.subscribe("turtle2/cmd_vel", 10, turtle2VelocityCallback);
+
     ros::Rate rate(10);
 
     while (ros::ok())
@@ -72,28 +88,35 @@ int main(int argc, char **argv)
         bool out_of_bounds2 = turtle2_pose.x < BOUNDARY_MIN || turtle2_pose.x > BOUNDARY_MAX ||
                               turtle2_pose.y < BOUNDARY_MIN || turtle2_pose.y > BOUNDARY_MAX;
 
-        // Check if the turtles are "too close"
-        if (distance < DISTANCE_THRESHOLD || out_of_bounds1 || out_of_bounds2)
-        {
-
-            geometry_msgs::Twist stop_cmd;
-            stop_cmd.linear.x = 0.0;
-            stop_cmd.angular.z = 0.0;
-            // Stop only the moving turtle
-            if (moving_turtle == 1)
-            {
-                pub_turtle1_stop.publish(stop_cmd);
-                ROS_WARN("Turtles are too close or out of bounds! Stopped turtle1.");
-            }
-            else if (moving_turtle == 2)
-            {
-                pub_turtle2_stop.publish(stop_cmd);
-                ROS_WARN("Turtles are too close or out of bounds! Stopped turtle2.");
-            }
+        geometry_msgs::Twist reverse_cmd;
+        
+        // Stop only the moving turtle
+        if (moving_turtle == 1 && (out_of_bounds1 || distance < DISTANCE_THRESHOLD))
+        {   
+            // Reverse turtle1's velocity
+            reverse_cmd.linear.x = -turtle1_velocity.linear.x; // Reverse linear velocity
+            reverse_cmd.angular.z = 0.0;                      // Stop angular rotation
+            pub_turtle1_stop.publish(reverse_cmd);
+            ROS_WARN("Turtle1 out of bounds! Reversing velocity.");
+            ros::Duration(1.0).sleep();
+            reverse_cmd.linear.x = 0.0;
+            pub_turtle1_stop.publish(reverse_cmd);
+            ROS_WARN("Turtles are too close or out of bounds! Stopped turtle1.");
         }
-
-        rate.sleep();
+        else if (moving_turtle == 2 && (out_of_bounds2 || distance < DISTANCE_THRESHOLD))
+        {   
+            reverse_cmd.linear.x = -turtle2_velocity.linear.x; 
+            reverse_cmd.angular.z = 0.0;                      
+            pub_turtle2_stop.publish(reverse_cmd);
+            ROS_WARN("Turtle2 out of bounds! Reversing velocity.");
+            ros::Duration(1.0).sleep();
+            reverse_cmd.linear.x = 0.0;
+            pub_turtle2_stop.publish(reverse_cmd);
+            ROS_WARN("Turtles are too close or out of bounds! Stopped turtle2.");
+        }
     }
+
+    rate.sleep();
 
     return 0;
 }
